@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fracciones Continuas - Calculadora y Visualizador Interactivo</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- KaTeX CSS and JS for rendering high-quality math -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbar and smooth transitions */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.6);
+    }
+    .katex-display {
+      margin: 0.5em 0 !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0.5rem 0;
+    }
+    .active-tab {
+      border-bottom: 2px solid #6366f1;
+      color: #4f46e5;
+      font-weight: 600;
+    }
+    .dark .active-tab {
+      border-bottom: 2px solid #818cf8;
+      color: #818cf8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+  <header class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-500/20">
+          <i data-lucide="layers" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+            Fracciones Continuas
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+            Calculadora de fracciones, decimales periódicos, expresiones e irracionales
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <button id="themeToggle" class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Cambiar tema">
+          <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+          <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+        </button>
+        <button id="theoryBtn" class="flex items-center space-x-1 px-3 py-1.5 text-xs sm:text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Teoría y Propiedades</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- LEFT PANEL: Controls & Presets -->
+    <section class="lg:col-span-4 space-y-6">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h2 class="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <i data-lucide="sliders" class="w-4 h-4 text-indigo-500"></i>
+            Parámetros de Entrada
+          </h2>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500" id="modeBadge">Smart / Texto</span>
+        </div>
+
+        <!-- Mode Selector Buttons -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+            Tipo / Notación
+          </label>
+          <div class="grid grid-cols-3 gap-1.5 text-xs">
+            <button data-mode="smart" class="mode-btn px-2 py-2 rounded-xl border border-indigo-600 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-medium transition">
+              Smart Express
+            </button>
+            <button data-mode="periodic" class="mode-btn px-2 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+              Dec. Periódico
+            </button>
+            <button data-mode="quadratic" class="mode-btn px-2 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+              Cuadrática (a+b√c)/d
+            </button>
+            <button data-mode="rational" class="mode-btn px-2 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+              Fracción p/q
+            </button>
+            <button data-mode="decimal" class="mode-btn px-2 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+              Decimal
+            </button>
+            <button data-mode="constant" class="mode-btn px-2 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+              Constante
+            </button>
+          </div>
+        </div>
+
+        <div id="inputControls" class="space-y-4">
+          <!-- Rendered dynamically via JS -->
+        </div>
+
+        <!-- Term Depth Slider -->
+        <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div class="flex justify-between items-center text-xs">
+            <label class="font-medium text-slate-700 dark:text-slate-300">Términos a calcular:</label>
+            <span id="depthVal" class="font-bold text-indigo-600 dark:text-indigo-400">15</span>
+          </div>
+          <input type="range" id="depthSlider" min="2" max="40" value="15" class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+        </div>
+
+        <!-- Presets Buttons -->
+        <div class="space-y-2">
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            Valores Destacados
+          </label>
+          <div class="flex flex-wrap gap-1.5">
+            <button data-preset="periodic1" class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-slate-700 dark:text-slate-300 font-mono transition">
+              0.1(6) [1/6]
+            </button>
+            <button data-preset="periodic2" class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-slate-700 dark:text-slate-300 font-mono transition">
+              1.2(34) [611/495]
+            </button>
+            <button data-preset="phi_expr" class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-slate-700 dark:text-slate-300 font-serif italic transition">
+              (1+√5)/2
+            </button>
+            <button data-preset="sqrt2" class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-slate-700 dark:text-slate-300 font-mono transition">
+              √2
+            </button>
+            <button data-preset="pi" class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-slate-700 dark:text-slate-300 font-serif italic transition">
+              π (Pi)
+            </button>
+            <button data-preset="e" class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-slate-700 dark:text-slate-300 font-serif italic transition">
+              e (Euler)
+            </button>
+            <button data-preset="355_113" class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-slate-700 dark:text-slate-300 font-mono transition">
+              355/113
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-indigo-900/10 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/50 rounded-2xl p-4 text-xs space-y-3">
+        <h3 class="font-semibold text-indigo-900 dark:text-indigo-300 flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <i data-lucide="calculator" class="w-4 h-4 text-indigo-500"></i>
+            Fracción y Resumen Numérico
+          </span>
+          <span id="exactBadge" class="text-[10px] px-2 py-0.5 rounded-md font-mono bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+            Fracción Exacta
+          </span>
+        </h3>
+
+        <!-- Exact Fraction Math Display -->
+        <div id="summaryFractionMath" class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/40 text-center overflow-x-auto min-h-[50px] flex items-center justify-center">
+          <!-- Rendered via KaTeX -->
+        </div>
+
+        <div class="space-y-1.5 font-mono text-slate-600 dark:text-slate-300 pt-1">
+          <div class="flex justify-between border-b border-indigo-100/50 dark:border-indigo-900/30 pb-1">
+            <span class="text-slate-400">Valor Decimal:</span> 
+            <span id="summaryDecimal" class="font-semibold text-slate-800 dark:text-slate-100"></span>
+          </div>
+          <div class="flex justify-between border-b border-indigo-100/50 dark:border-indigo-900/30 pb-1">
+            <span class="text-slate-400">Tipo:</span> 
+            <span id="summaryType" class="font-medium text-indigo-600 dark:text-indigo-400"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Periodicidad:</span> 
+            <span id="summaryPeriod" class="font-medium"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lg:col-span-8 space-y-6">
+      
+      <!-- CONTINUED FRACTION REPRESENTATION BOX -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h2 class="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <i data-lucide="binary" class="w-4 h-4 text-indigo-500"></i>
+            Representación Formal
+          </h2>
+          <div class="flex gap-2">
+            <button id="copyListBtn" class="text-xs flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              Copiar Coeficientes
+            </button>
+          </div>
+        </div>
+
+        <!-- Coeffs bracket representation -->
+        <div class="p-3 bg-slate-50 dark:bg-slate-950/80 rounded-xl border border-slate-200/60 dark:border-slate-800/80 font-mono text-sm sm:text-base break-words flex items-center justify-between">
+          <div>
+            <span class="text-slate-400 select-none">x = </span>
+            <span id="coeffList" class="font-bold text-indigo-600 dark:text-indigo-400"></span>
+          </div>
+        </div>
+
+        <!-- Nested Fraction Math Tower -->
+        <div class="space-y-1">
+          <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Torre de Fracción Continua</div>
+          <div id="katexTower" class="p-4 bg-slate-50 dark:bg-slate-950/80 rounded-xl border border-slate-200/60 dark:border-slate-800/80 min-h-[90px] flex items-center justify-center text-center overflow-x-auto"></div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        
+        <!-- Tab Navigation Header -->
+        <div class="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto text-xs sm:text-sm font-medium bg-slate-50/50 dark:bg-slate-900/50">
+          <button data-tab="tiling" class="tab-btn px-4 py-3 flex items-center gap-2 whitespace-nowrap active-tab">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            Geometría (Tiling)
+          </button>
+          <button data-tab="convergents" class="tab-btn px-4 py-3 flex items-center gap-2 whitespace-nowrap text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="table" class="w-4 h-4"></i>
+            Tabla Convergentes
+          </button>
+          <button data-tab="convergence" class="tab-btn px-4 py-3 flex items-center gap-2 whitespace-nowrap text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="line-chart" class="w-4 h-4"></i>
+            Gráfico Oscilación
+          </button>
+          <button data-tab="tree" class="tab-btn px-4 py-3 flex items-center gap-2 whitespace-nowrap text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="git-fork" class="w-4 h-4"></i>
+            Stern-Brocot (L/R)
+          </button>
+          <button data-tab="reverse" class="tab-btn px-4 py-3 flex items-center gap-2 whitespace-nowrap text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="calculator" class="w-4 h-4"></i>
+            Modo Inverso
+          </button>
+        </div>
+
+        <!-- TAB CONTENT AREA -->
+        <div class="p-5">
+          
+          <!-- TAB 1: GEOMETRIC RECTANGLE TILING -->
+          <div id="tab-tiling" class="tab-content space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500">
+              <p>
+                Visualización del <strong>Algoritmo de Euclides</strong>: Recubrir un rectángulo de proporción <span id="tilingRatioText" class="font-mono font-semibold text-indigo-600 dark:text-indigo-400"></span> usando cuadrados de tamaño decreciente.
+              </p>
+            </div>
+
+            <div class="relative w-full h-[360px] bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
+              <canvas id="tilingCanvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+            </div>
+            
+            <div id="tilingStepsList" class="flex flex-wrap gap-2 text-xs">
+              <!-- Step chips -->
+            </div>
+          </div>
+
+          <div id="tab-convergents" class="tab-content hidden space-y-4">
+            <p class="text-xs text-slate-500">
+              Las convergentes <span class="font-mono font-semibold text-slate-700 dark:text-slate-300">p<sub>k</sub> / q<sub>k</sub></span> son las <strong>mejores aproximaciones racionales de segunda especie</strong>. Cumplen la relación de recurrencia <span class="font-mono text-indigo-600 dark:text-indigo-400">p<sub>k</sub> = a<sub>k</sub>p<sub>k-1</sub> + p<sub>k-2</sub></span>.
+            </p>
+            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead class="bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th class="p-3 text-center">k</th>
+                    <th class="p-3">a<sub>k</sub></th>
+                    <th class="p-3">Convergente (p<sub>k</sub> / q<sub>k</sub>)</th>
+                    <th class="p-3">Valor Decimal</th>
+                    <th class="p-3">Error Absoluto</th>
+                    <th class="p-3">Cota Error (1 / q<sub>k</sub> q<sub>k+1</sub>)</th>
+                  </tr>
+                </thead>
+                <tbody id="convergentsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="tab-convergence" class="tab-content hidden space-y-4">
+            <p class="text-xs text-slate-500">
+              Las convergentes pares (<span class="font-mono">p<sub>0</sub>/q<sub>0</sub>, p<sub>2</sub>/q<sub>2</sub>, ...</span>) aproximan el valor real por <strong>defecto (abajo)</strong>, mientras que las impares (<span class="font-mono">p<sub>1</sub>/q<sub>1</sub>, p<sub>3</sub>/q<sub>3</sub>, ...</span>) lo aproximan por <strong>exceso (arriba)</strong>.
+            </p>
+            <div class="relative w-full h-[360px] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
+              <canvas id="graphCanvas" class="w-full h-full"></canvas>
+            </div>
+          </div>
+
+          <div id="tab-tree" class="tab-content hidden space-y-4">
+            <div class="space-y-2">
+              <p class="text-xs text-slate-500">
+                Toda fracción continua positiva equivale a un camino único en el <strong>Árbol de Stern-Brocot</strong> codificado por giros a la Izquierda (L) y Derecha (R):
+              </p>
+              <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-sm break-all flex items-center justify-between">
+                <div>
+                  <span class="text-slate-400">Camino L/R: </span>
+                  <span id="lrPathText" class="font-bold text-indigo-600 dark:text-indigo-400"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative w-full h-[320px] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
+              <canvas id="treeCanvas" class="w-full h-full"></canvas>
+            </div>
+          </div>
+
+          <div id="tab-reverse" class="tab-content hidden space-y-4">
+            <p class="text-xs text-slate-500">
+              Ingresa una secuencia de coeficientes enteros [a<sub>0</sub>; a<sub>1</sub>, a<sub>2</sub>, ...] para calcular la fracción equivalente y su valor decimal:
+            </p>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                  Coeficientes separados por coma o espacio:
+                </label>
+                <input type="text" id="reverseInput" value="3, 7, 15, 1, 292" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+
+              <div class="p-4 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl border border-indigo-100 dark:border-indigo-900/50 space-y-3">
+                <div class="text-xs text-indigo-900 dark:text-indigo-300 font-semibold">
+                  Resultado Evaluado:
+                </div>
+                <div id="reverseMathResult" class="text-center py-2 overflow-x-auto"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono pt-2 border-t border-indigo-100 dark:border-indigo-900/40">
+                  <div><span class="text-slate-400">Fracción:</span> <span id="reverseFraction" class="font-bold text-slate-800 dark:text-slate-100"></span></div>
+                  <div><span class="text-slate-400">Decimal:</span> <span id="reverseDecimal" class="font-bold text-slate-800 dark:text-slate-100"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="theoryModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <i data-lucide="book-open" class="w-5 h-5 text-indigo-500"></i>
+          Teoría de Fracciones Continuas y Decimales Periódicos
+        </h3>
+        <button id="closeTheoryBtn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+        <h4 class="font-bold text-slate-900 dark:text-slate-100 text-base">1. Definición Formal</h4>
+        <p>
+          Una <strong>fracción continua simple</strong> es una expresión de la forma:
+        </p>
+        <p class="text-center font-mono py-1 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400">
+          x = a₀ + 1 / (a₁ + 1 / (a₂ + 1 / (a₃ + ...)))
+        </p>
+        <p>
+          donde a₀ es entero y a₁, a₂, ... son enteros positivos. Se abrevia como [a₀; a₁, a₂, ...].
+        </p>
+
+        <h4 class="font-bold text-slate-900 dark:text-slate-100 text-base">2. Conversión de Decimales Periódicos a Fracción</h4>
+        <p>
+          Todo decimal periódico $I.A\overline{P}$ (con parte entera $I$, anteperíodo $A$ de longitud $n_A$ y período $P$ de longitud $n_P$) se convierte a fracción exacta mediante:
+        </p>
+        <p class="text-center font-mono py-1 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400">
+          Fracción = I + \frac{A}{10^{n_A}} + \frac{P}{10^{n_A} (10^{n_P} - 1)}
+        </p>
+
+        <h4 class="font-bold text-slate-900 dark:text-slate-100 text-base">3. Irracionales Cuadráticos y Teorema de Lagrange</h4>
+        <p>
+          Una fracción continua es <strong>periódica</strong> si y solo si representa un <em>irracional cuadrático</em> de la forma $\frac{a + b\sqrt{c}}{d}$. Por ejemplo, $\sqrt{2} = [1; \overline{2}]$ y $\phi = [1; \overline{1}]$.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // GLOBAL STATE & DATA STRUCTURES
+    const state = {
+      mode: 'smart', // 'smart', 'periodic', 'quadratic', 'rational', 'decimal', 'constant'
+      
+      // Inputs
+      smartInput: '1.2(34)',
+      
+      periodicInt: '1',
+      periodicNonRep: '2',
+      periodicRep: '34',
+
+      quadA: 1,
+      quadB: 1,
+      quadC: 5,
+      quadD: 2,
+
+      rationalNum: 355,
+      rationalDen: 113,
+      decimalVal: 3.141592653589793,
+      constantKey: 'pi',
+      depth: 15,
+      
+      // Computed Results
+      terms: [],
+      isPeriodic: false,
+      periodStart: -1,
+      periodLength: 0,
+      convergents: [],
+      targetValue: 0,
+      
+      exactFraction: { num: null, den: null, isExact: false },
+      formattedSymbolicLatex: '',
+
+      // UI state
+      activeTab: 'tiling'
+    };
+
+    // PRESETS DEFINITION
+    const PRESETS = {
+      'periodic1': { mode: 'periodic', int: '0', nonRep: '1', rep: '6', depth: 10 },
+      'periodic2': { mode: 'periodic', int: '1', nonRep: '2', rep: '34', depth: 12 },
+      'phi_expr': { mode: 'quadratic', a: 1, b: 1, c: 5, d: 2, depth: 20 },
+      'sqrt2': { mode: 'quadratic', a: 0, b: 1, c: 2, d: 1, depth: 15 },
+      'pi': { mode: 'constant', key: 'pi', depth: 20 },
+      'e': { mode: 'constant', key: 'e', depth: 20 },
+      '355_113': { mode: 'rational', num: 355, den: 113, depth: 10 }
+    };
+
+    const KNOWN_CONSTANTS = {
+      pi: {
+        name: '\\pi',
+        val: Math.PI,
+        generator: (max) => [3, 7, 15, 1, 292, 1, 1, 1, 2, 1, 31, 84, 2, 1, 1, 15, 1, 25, 1, 22].slice(0, max)
+      },
+      e: {
+        name: 'e',
+        val: Math.E,
+        generator: (max) => {
+          let res = [2];
+          let k = 1;
+          while (res.length < max) {
+            res.push(1);
+            if (res.length < max) res.push(2 * k);
+            if (res.length < max) res.push(1);
+            k++;
+          }
+          return res.slice(0, max);
+        }
+      },
+      phi: {
+        name: '\\phi',
+        val: (1 + Math.sqrt(5)) / 2,
+        generator: (max) => new Array(max).fill(1)
+      }
+    };
+
+    function gcdBigInt(a, b) {
+      a = a < 0n ? -a : a;
+      b = b < 0n ? -b : b;
+      while (b !== 0n) {
+        let t = b;
+        b = a % b;
+        a = t;
+      }
+      return a;
+    }
+
+    function parsePeriodicDecimalToFraction(intPartStr, nonRepStr, repStr) {
+      let intPart = BigInt(intPartStr || '0');
+      let nonRep = (nonRepStr || '').trim();
+      let rep = (repStr || '').trim();
+
+      if (rep === '') {
+        let lenNR = BigInt(nonRep.length);
+        let den = 10n ** lenNR;
+        let num = intPart * den + BigInt(nonRep || '0');
+        let g = gcdBigInt(num, den);
+        return { num: num / g, den: den / g };
+      } else {
+        let lenNR = BigInt(nonRep.length);
+        let lenR = BigInt(rep.length);
+        
+        let powNR = 10n ** lenNR;
+        let powR = (10n ** lenR) - 1n;
+        let den = powNR * powR;
+
+        let vNR = BigInt(nonRep || '0');
+        let vR = BigInt(rep);
+
+        let num = intPart * den + (vNR * powR) + vR;
+        let g = gcdBigInt(num, den);
+        return { num: num / g, den: den / g };
+      }
+    }
+
+    function computeRationalCF(num, den, maxTerms) {
+      let terms = [];
+      let a = BigInt(num);
+      let b = BigInt(den);
+      let sign = (a < 0n) ^ (b < 0n) ? -1 : 1;
+      a = a < 0n ? -a : a;
+      b = b < 0n ? -b : b;
+
+      while (b !== 0n && terms.length < maxTerms) {
+        let q = a / b;
+        let r = a % b;
+        terms.push(Number(q));
+        a = b;
+        b = r;
+      }
+      if (sign === -1 && terms.length > 0) {
+        terms[0] = -terms[0];
+      }
+      return { terms, isPeriodic: false, periodStart: -1, periodLength: 0 };
+    }
+
+    function computeQuadraticCF(a, b, c, d, maxTerms) {
+      let val = (a + b * Math.sqrt(c)) / d;
+      let terms = [];
+      let x = val;
+      
+      // Floating numeric fallback with period detection for quadratic irrationals
+      let history = [];
+      let periodStart = -1;
+      let periodLength = 0;
+      let isPeriodic = false;
+
+      for (let i = 0; i < maxTerms; i++) {
+        let term = Math.floor(x);
+        terms.push(term);
+        let frac = x - term;
+        if (Math.abs(frac) < 1e-11) break;
+
+        x = 1 / frac;
+
+        if (!isPeriodic) {
+          for (let j = 0; j < history.length; j++) {
+            if (Math.abs(history[j] - x) < 1e-7) {
+              periodStart = j + 1;
+              periodLength = i - j;
+              isPeriodic = true;
+              break;
+            }
+          }
+          history.push(x);
+        }
+      }
+
+      return { terms, isPeriodic, periodStart, periodLength, val };
+    }
+
+    function computeFloatCF(val, maxTerms) {
+      let terms = [];
+      let x = val;
+      for (let i = 0; i < maxTerms; i++) {
+        let a = Math.floor(x);
+        terms.push(a);
+        let frac = x - a;
+        if (Math.abs(frac) < 1e-11) break;
+        x = 1 / frac;
+        if (!isFinite(x) || x > 1e12) break;
+      }
+      return { terms, isPeriodic: false, periodStart: -1, periodLength: 0 };
+    }
+
+    function computeConvergents(terms, targetVal) {
+      let convergents = [];
+      let pPrev2 = 0n, pPrev1 = 1n;
+      let qPrev2 = 1n, qPrev1 = 0n;
+
+      for (let k = 0; k < terms.length; k++) {
+        let ak = BigInt(terms[k]);
+        let pk = ak * pPrev1 + pPrev2;
+        let qk = ak * qPrev1 + qPrev2;
+
+        pPrev2 = pPrev1;
+        pPrev1 = pk;
+        qPrev2 = qPrev1;
+        qPrev1 = qk;
+
+        let decimalVal = Number(pk) / Number(qk);
+        let error = Math.abs(targetVal - decimalVal);
+
+        convergents.push({
+          k,
+          a: terms[k],
+          p: pk,
+          q: qk,
+          decimal: decimalVal,
+          error: error,
+          bound: null
+        });
+      }
+
+      for (let k = 0; k < convergents.length - 1; k++) {
+        let qk = convergents[k].q;
+        let qkNext = convergents[k+1].q;
+        convergents[k].bound = 1 / (Number(qk) * Number(qkNext));
+      }
+
+      return convergents;
+    }
+
+    function parseSmartInput(inputStr) {
+      let str = inputStr.trim();
+      
+      // 1. Periodic decimal match e.g. 1.2(34), 0.1[6], 0.1(6)
+      let perMatch = str.match(/^(\d+)?\.(?:(\d+))?[\(\[\{](\d+)[\)\]\}]$/);
+      if (perMatch) {
+        let intP = perMatch[1] || '0';
+        let nonRep = perMatch[2] || '';
+        let rep = perMatch[3];
+        let frac = parsePeriodicDecimalToFraction(intP, nonRep, rep);
+        return { type: 'periodic', fraction: frac, intP, nonRep, rep };
+      }
+
+      // 2. Rational fraction match e.g. 355/113
+      let fracMatch = str.match(/^(-?\d+)\s*\/\s*(-?\d+)$/);
+      if (fracMatch) {
+        let num = BigInt(fracMatch[1]);
+        let den = BigInt(fracMatch[2]);
+        let g = gcdBigInt(num, den);
+        return { type: 'rational', fraction: { num: num / g, den: den / g } };
+      }
+
+      // 3. Square root or quadratic match e.g. sqrt(5), \sqrt{5}, (1+sqrt(5))/2
+      if (str.includes('sqrt')) {
+        let sqrtMatch = str.match(/sqrt\((\d+)\)/) || str.match(/\\sqrt\{(\d+)\}/);
+        if (sqrtMatch) {
+          let c = parseInt(sqrtMatch[1]);
+          return { type: 'quadratic', a: 0, b: 1, c: c, d: 1 };
+        }
+      }
+
+      // 4. Default to standard float
+      let floatVal = parseFloat(str);
+      if (!isNaN(floatVal)) {
+        return { type: 'decimal', val: floatVal };
+      }
+
+      return { type: 'decimal', val: 0 };
+    }
+
+    function calculateAll() {
+      let res = { terms: [], isPeriodic: false, periodStart: -1, periodLength: 0 };
+      let target = 0;
+      let exactFraction = { num: null, den: null, isExact: false };
+      let symbolicLatex = '';
+
+      if (state.mode === 'smart') {
+        let parsed = parseSmartInput(state.smartInput);
+        if (parsed.type === 'periodic' || parsed.type === 'rational') {
+          exactFraction = { num: parsed.fraction.num, den: parsed.fraction.den, isExact: true };
+          target = Number(parsed.fraction.num) / Number(parsed.fraction.den);
+          res = computeRationalCF(parsed.fraction.num, parsed.fraction.den, state.depth);
+          if (parsed.type === 'periodic') {
+            let nRStr = parsed.nonRep ? parsed.nonRep : '';
+            symbolicLatex = `${parsed.intP}.${nRStr}\\overline{${parsed.rep}} = \\frac{${parsed.fraction.num.toString()}}{${parsed.fraction.den.toString()}}`;
+          } else {
+            symbolicLatex = `\\frac{${parsed.fraction.num.toString()}}{${parsed.fraction.den.toString()}}`;
+          }
+        } else if (parsed.type === 'quadratic') {
+          let qRes = computeQuadraticCF(parsed.a, parsed.b, parsed.c, parsed.d, state.depth);
+          target = qRes.val;
+          res = qRes;
+          symbolicLatex = `\\sqrt{${parsed.c}}`;
+        } else {
+          target = parsed.val;
+          res = computeFloatCF(target, state.depth);
+          symbolicLatex = `${target}`;
+        }
+      } else if (state.mode === 'periodic') {
+        let frac = parsePeriodicDecimalToFraction(state.periodicInt, state.periodicNonRep, state.periodicRep);
+        exactFraction = { num: frac.num, den: frac.den, isExact: true };
+        target = Number(frac.num) / Number(frac.den);
+        res = computeRationalCF(frac.num, frac.den, state.depth);
+        let nRStr = state.periodicNonRep ? state.periodicNonRep : '';
+        symbolicLatex = `${state.periodicInt || 0}.${nRStr}\\overline{${state.periodicRep || 0}} = \\frac{${frac.num.toString()}}{${frac.den.toString()}}`;
+      } else if (state.mode === 'quadratic') {
+        let a = state.quadA, b = state.quadB, c = state.quadC, d = state.quadD || 1;
+        let qRes = computeQuadraticCF(a, b, c, d, state.depth);
+        target = qRes.val;
+        res = qRes;
+        
+        let numLatex = '';
+        if (a !== 0) numLatex += `${a}`;
+        if (b === 1) numLatex += `${a !== 0 ? '+' : ''}\\sqrt{${c}}`;
+        else if (b === -1) numLatex += `-\\sqrt{${c}}`;
+        else if (b !== 0) numLatex += `${b > 0 && a !== 0 ? '+' : ''}${b}\\sqrt{${c}}`;
+
+        if (d !== 1) {
+          symbolicLatex = `\\frac{${numLatex}}{${d}}`;
+        } else {
+          symbolicLatex = numLatex || `\\sqrt{${c}}`;
+        }
+      } else if (state.mode === 'rational') {
+        let num = BigInt(parseInt(state.rationalNum) || 1);
+        let den = BigInt(parseInt(state.rationalDen) || 1);
+        if (den === 0n) den = 1n;
+        let g = gcdBigInt(num, den);
+        num = num / g;
+        den = den / g;
+
+        exactFraction = { num, den, isExact: true };
+        target = Number(num) / Number(den);
+        res = computeRationalCF(num, den, state.depth);
+        symbolicLatex = `\\frac{${num.toString()}}{${den.toString()}}`;
+      } else if (state.mode === 'decimal') {
+        target = parseFloat(state.decimalVal) || 0;
+        res = computeFloatCF(target, state.depth);
+        symbolicLatex = `${target}`;
+      } else if (state.mode === 'constant') {
+        let constObj = KNOWN_CONSTANTS[state.constantKey] || KNOWN_CONSTANTS.pi;
+        target = constObj.val;
+        res.terms = constObj.generator(state.depth);
+        symbolicLatex = constObj.name;
+        if (state.constantKey === 'phi') {
+          res.isPeriodic = true;
+          res.periodStart = 0;
+          res.periodLength = 1;
+        }
+      }
+
+      state.terms = res.terms;
+      state.isPeriodic = res.isPeriodic;
+      state.periodStart = res.periodStart;
+      state.periodLength = res.periodLength;
+      state.targetValue = target;
+      state.exactFraction = exactFraction;
+      state.formattedSymbolicLatex = symbolicLatex;
+      state.convergents = computeConvergents(state.terms, target);
+
+      renderAll();
+    }
+
+    function renderAll() {
+      let coeffStr = '[' + (state.terms[0] !== undefined ? state.terms[0] : '0');
+      if (state.terms.length > 1) {
+        coeffStr += '; ' + state.terms.slice(1).join(', ');
+      }
+      coeffStr += ']';
+
+      document.getElementById('coeffList').textContent = coeffStr;
+      document.getElementById('summaryDecimal').textContent = state.targetValue.toFixed(10);
+      
+      document.getElementById('summaryType').textContent = 
+        state.exactFraction.isExact ? 'Racional Exacto' :
+        state.isPeriodic ? 'Irracional Cuadrático (Periódico)' : 'Irracional / Aproximado';
+      
+      document.getElementById('summaryPeriod').textContent = 
+        state.isPeriodic ? `Periódica (Longitud ${state.periodLength})` : 'No Periódica';
+
+      const exactBadge = document.getElementById('exactBadge');
+      if (state.exactFraction.isExact) {
+        exactBadge.textContent = "Fracción Exacta";
+        exactBadge.className = "text-[10px] px-2 py-0.5 rounded-md font-mono bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800";
+      } else {
+        exactBadge.textContent = "Aproximación";
+        exactBadge.className = "text-[10px] px-2 py-0.5 rounded-md font-mono bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800";
+      }
+
+      renderSummaryFractionMath();
+      renderKaTeXFraction();
+      renderActiveTab();
+    }
+
+    function renderSummaryFractionMath() {
+      const el = document.getElementById('summaryFractionMath');
+      if (!el) return;
+
+      let latex = '';
+      if (state.exactFraction.isExact) {
+        latex = `x = \\frac{${state.exactFraction.num.toString()}}{${state.exactFraction.den.toString()}}`;
+        if (state.formattedSymbolicLatex && !state.formattedSymbolicLatex.includes('\\frac')) {
+          latex = `x = ${state.formattedSymbolicLatex}`;
+        }
+      } else {
+        let bestConv = state.convergents[state.convergents.length - 1];
+        if (bestConv) {
+          latex = `x \\approx \\frac{${bestConv.p.toString()}}{${bestConv.q.toString()}}`;
+        } else {
+          latex = `x \\approx ${state.targetValue.toFixed(6)}`;
+        }
+      }
+
+      try {
+        katex.render(latex, el, { displayMode: true, throwOnError: false });
+      } catch (e) {
+        el.textContent = latex;
+      }
+    }
+
+    function renderKaTeXFraction() {
+      const container = document.getElementById('katexTower');
+      if (!container) return;
+
+      const termsToDisplay = state.terms.slice(0, 7);
+      if (termsToDisplay.length === 0) {
+        container.innerHTML = 'N/A';
+        return;
+      }
+
+      function buildNestedLatex(index) {
+        if (index >= termsToDisplay.length) {
+          return state.terms.length > termsToDisplay.length ? '\\dots' : '';
+        }
+        let a = termsToDisplay[index];
+        let next = buildNestedLatex(index + 1);
+        if (!next) return `${a}`;
+        return `${a} + \\cfrac{1}{${next}}`;
+      }
+
+      let latex = 'x = ' + buildNestedLatex(0);
+      try {
+        katex.render(latex, container, { displayMode: true, throwOnError: false });
+      } catch (e) {
+        container.textContent = latex;
+      }
+    }
+
+    function renderActiveTab() {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${state.activeTab}`).classList.remove('hidden');
+
+      if (state.activeTab === 'tiling') {
+        drawTilingCanvas();
+      } else if (state.activeTab === 'convergents') {
+        renderConvergentsTable();
+      } else if (state.activeTab === 'convergence') {
+        drawConvergenceGraph();
+      } else if (state.activeTab === 'tree') {
+        drawSternBrocotTree();
+      } else if (state.activeTab === 'reverse') {
+        updateReverseCalculation();
+      }
+    }
+
+    function drawTilingCanvas() {
+      const canvas = document.getElementById('tilingCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      
+      const width = canvas.parentElement.clientWidth;
+      const height = canvas.parentElement.clientHeight;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+      ctx.clearRect(0, 0, width, height);
+
+      let ratio = Math.abs(state.targetValue) || 1;
+      document.getElementById('tilingRatioText').textContent = `${ratio.toFixed(4)} : 1`;
+
+      const colors = [
+        '#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', 
+        '#8b5cf6', '#06b6d4', '#14b8a6', '#f97316', '#e11d48'
+      ];
+
+      const margin = 20;
+      let availWidth = width - margin * 2;
+      let availHeight = height - margin * 2;
+
+      let rectW, rectH;
+      if (ratio >= 1) {
+        rectW = availWidth;
+        rectH = availWidth / ratio;
+        if (rectH > availHeight) {
+          rectH = availHeight;
+          rectW = availHeight * ratio;
+        }
+      } else {
+        rectH = availHeight;
+        rectW = availHeight * ratio;
+        if (rectW > availWidth) {
+          rectW = availWidth;
+          rectH = availWidth / ratio;
+        }
+      }
+
+      let startX = (width - rectW) / 2;
+      let startY = (height - rectH) / 2;
+
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(startX, startY, rectW, rectH);
+
+      let currX = startX;
+      let currY = startY;
+      let currW = rectW;
+      let currH = rectH;
+
+      let stepsLegend = [];
+      let termsToDraw = state.terms.slice(0, 12);
+
+      for (let k = 0; k < termsToDraw.length; k++) {
+        let a = termsToDraw[k];
+        let color = colors[k % colors.length];
+
+        if (a <= 0) continue;
+
+        if (currW >= currH) {
+          let squareSide = currH;
+          let count = Math.min(a, Math.floor(currW / squareSide));
+          for (let i = 0; i < count; i++) {
+            ctx.fillStyle = color + '33';
+            ctx.fillRect(currX, currY, squareSide, squareSide);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(currX, currY, squareSide, squareSide);
+
+            if (squareSide > 16) {
+              ctx.fillStyle = '#f8fafc';
+              ctx.font = 'bold 11px sans-serif';
+              ctx.fillText(`a${k}=${a}`, currX + 4, currY + 14);
+            }
+
+            currX += squareSide;
+            currW -= squareSide;
+          }
+        } else {
+          let squareSide = currW;
+          let count = Math.min(a, Math.floor(currH / squareSide));
+          for (let i = 0; i < count; i++) {
+            ctx.fillStyle = color + '33';
+            ctx.fillRect(currX, currY, squareSide, squareSide);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(currX, currY, squareSide, squareSide);
+
+            if (squareSide > 16) {
+              ctx.fillStyle = '#f8fafc';
+              ctx.font = 'bold 11px sans-serif';
+              ctx.fillText(`a${k}=${a}`, currX + 4, currY + 14);
+            }
+
+            currY += squareSide;
+            currH -= squareSide;
+          }
+        }
+
+        stepsLegend.push(`
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono border" style="background-color: ${color}15; border-color: ${color}60; color: ${color};">
+            a<sub>${k}</sub> = ${a}
+          </span>
+        `);
+
+        if (currW <= 0.5 || currH <= 0.5) break;
+      }
+
+      document.getElementById('tilingStepsList').innerHTML = stepsLegend.join('');
+    }
+
+    function renderConvergentsTable() {
+      const tbody = document.getElementById('convergentsTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = state.convergents.map(c => {
+        let isEven = c.k % 2 === 0;
+        let badgeColor = isEven ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+        
+        return `
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+            <td class="p-3 text-center font-bold text-slate-400">${c.k}</td>
+            <td class="p-3 font-semibold text-indigo-600 dark:text-indigo-400">${c.a}</td>
+            <td class="p-3">
+              <span class="font-bold text-slate-800 dark:text-slate-100">${c.p.toString()}</span>
+              <span class="text-slate-400"> / </span>
+              <span class="text-slate-600 dark:text-slate-300">${c.q.toString()}</span>
+            </td>
+            <td class="p-3 text-slate-700 dark:text-slate-200">${c.decimal.toFixed(8)}</td>
+            <td class="p-3">
+              <span class="inline-block px-2 py-0.5 rounded text-xs border ${badgeColor}">
+                ${c.error.toExponential(3)}
+              </span>
+            </td>
+            <td class="p-3 text-slate-400 text-xs">
+              ${c.bound ? '≤ ' + c.bound.toExponential(3) : '-'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function drawConvergenceGraph() {
+      const canvas = document.getElementById('graphCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const width = canvas.parentElement.clientWidth;
+      const height = canvas.parentElement.clientHeight;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+      ctx.clearRect(0, 0, width, height);
+
+      const convs = state.convergents;
+      if (convs.length === 0) return;
+
+      const padding = { top: 40, right: 40, bottom: 40, left: 60 };
+      const graphW = width - padding.left - padding.right;
+      const graphH = height - padding.top - padding.bottom;
+      const targetY = padding.top + graphH / 2;
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+
+      ctx.beginPath();
+      ctx.moveTo(padding.left, targetY);
+      ctx.lineTo(width - padding.right, targetY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#818cf8';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(`Valor Real (x ≈ ${state.targetValue.toFixed(6)})`, padding.left, targetY - 8);
+
+      const points = convs.map((c, idx) => {
+        let x = padding.left + (idx / Math.max(1, convs.length - 1)) * graphW;
+        let diff = c.decimal - state.targetValue;
+        let scaledDiff = Math.sign(diff) * Math.min(1, Math.log10(1 + Math.abs(diff) * 100)) * (graphH / 2.5);
+        let y = targetY - scaledDiff;
+        return { x, y, k: c.k, val: c.decimal, isEven: c.k % 2 === 0 };
+      });
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#6366f1';
+      ctx.lineWidth = 2;
+      points.forEach((pt, i) => {
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
+
+      points.forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = pt.isEven ? '#10b981' : '#f59e0b';
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '10px monospace';
+        ctx.fillText(`p${pt.k}/q${pt.k}`, pt.x - 12, pt.y + (pt.isEven ? 18 : -10));
+      });
+    }
+
+    function drawSternBrocotTree() {
+      let path = '';
+      let terms = state.terms;
+      if (terms.length > 0) {
+        let a0 = terms[0];
+        if (a0 > 0) path += 'R'.repeat(a0);
+        for (let i = 1; i < terms.length; i++) {
+          let char = (i % 2 === 1) ? 'L' : 'R';
+          path += char.repeat(terms[i]);
+        }
+      }
+      document.getElementById('lrPathText').textContent = path || 'Origen (1/1)';
+
+      const canvas = document.getElementById('treeCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const width = canvas.parentElement.clientWidth;
+      const height = canvas.parentElement.clientHeight;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+      ctx.clearRect(0, 0, width, height);
+
+      function drawNode(x, y, num, den, depth, maxDepth, xSpan) {
+        if (depth > maxDepth) return;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#1e293b';
+        ctx.fill();
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${num}/${den}`, x, y);
+
+        if (depth < maxDepth) {
+          let nextY = y + 60;
+          let nextSpan = xSpan / 2;
+
+          ctx.beginPath();
+          ctx.moveTo(x, y + 14);
+          ctx.lineTo(x - nextSpan, nextY - 14);
+          ctx.strokeStyle = '#334155';
+          ctx.stroke();
+          drawNode(x - nextSpan, nextY, num, num + den, depth + 1, maxDepth, nextSpan);
+
+          ctx.beginPath();
+          ctx.moveTo(x, y + 14);
+          ctx.lineTo(x + nextSpan, nextY - 14);
+          ctx.strokeStyle = '#334155';
+          ctx.stroke();
+          drawNode(x + nextSpan, nextY, num + den, den, depth + 1, maxDepth, nextSpan);
+        }
+      }
+
+      drawNode(width / 2, 40, 1, 1, 1, 4, width / 4);
+    }
+
+    function updateReverseCalculation() {
+      const inputVal = document.getElementById('reverseInput').value;
+      const parts = inputVal.split(/[,;\s]+/).map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+
+      if (parts.length === 0) {
+        document.getElementById('reverseFraction').textContent = '-';
+        document.getElementById('reverseDecimal').textContent = '-';
+        return;
+      }
+
+      let pPrev2 = 0n, pPrev1 = 1n;
+      let qPrev2 = 1n, qPrev1 = 0n;
+
+      for (let k = 0; k < parts.length; k++) {
+        let ak = BigInt(parts[k]);
+        let pk = ak * pPrev1 + pPrev2;
+        let qk = ak * qPrev1 + qPrev2;
+
+        pPrev2 = pPrev1;
+        pPrev1 = pk;
+        qPrev2 = qPrev1;
+        qPrev1 = qk;
+      }
+
+      let p = pPrev1;
+      let q = qPrev1;
+      let dec = Number(p) / Number(q);
+
+      document.getElementById('reverseFraction').textContent = `${p.toString()} / ${q.toString()}`;
+      document.getElementById('reverseDecimal').textContent = dec.toFixed(10);
+
+      let latex = `[${parts[0]}; ${parts.slice(1).join(', ')}] = \\frac{${p.toString()}}{${q.toString()}} \\approx ${dec.toFixed(6)}`;
+      try {
+        katex.render(latex, document.getElementById('reverseMathResult'), { displayMode: true });
+      } catch (e) {}
+    }
+
+    function renderInputControls() {
+      const container = document.getElementById('inputControls');
+      if (!container) return;
+
+      if (state.mode === 'smart') {
+        container.innerHTML = `
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Expresión o Número (Smart Express)</label>
+            <input type="text" id="inputSmart" value="${state.smartInput}" placeholder="Ej: 0.1(6), 1.2(34), 355/113, sqrt(5)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <p class="text-[11px] text-slate-400 mt-1">Sombra o notación: <code class="text-indigo-500">1.2(34)</code> o <code class="text-indigo-500">0.1(6)</code> para periódicos.</p>
+          </div>
+        `;
+        document.getElementById('inputSmart').addEventListener('input', (e) => {
+          state.smartInput = e.target.value;
+          calculateAll();
+        });
+      } else if (state.mode === 'periodic') {
+        container.innerHTML = `
+          <div class="space-y-2">
+            <div class="text-xs font-medium text-slate-500">Decimal Periódico: Parte.Anteperíodo(Período)</div>
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[11px] text-slate-400">Parte Entera</label>
+                <input type="text" id="inputPerInt" value="${state.periodicInt}" class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 font-mono text-xs focus:ring-2 focus:ring-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400">Anteperíodo</label>
+                <input type="text" id="inputPerNR" value="${state.periodicNonRep}" placeholder="Opcional" class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 font-mono text-xs focus:ring-2 focus:ring-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-indigo-500 font-semibold">Período (...)</label>
+                <input type="text" id="inputPerR" value="${state.periodicRep}" class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-indigo-300 dark:border-indigo-700 font-mono text-xs focus:ring-2 focus:ring-indigo-500" />
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById('inputPerInt').addEventListener('input', (e) => { state.periodicInt = e.target.value; calculateAll(); });
+        document.getElementById('inputPerNR').addEventListener('input', (e) => { state.periodicNonRep = e.target.value; calculateAll(); });
+        document.getElementById('inputPerR').addEventListener('input', (e) => { state.periodicRep = e.target.value; calculateAll(); });
+      } else if (state.mode === 'quadratic') {
+        container.innerHTML = `
+          <div class="space-y-2">
+            <label class="block text-xs font-medium text-slate-500">Expresión Cuadrática: (a + b√c) / d</label>
+            <div class="grid grid-cols-4 gap-1.5 text-xs">
+              <div>
+                <label class="text-[10px] text-slate-400">a</label>
+                <input type="number" id="inputQuadA" value="${state.quadA}" class="w-full p-1.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 font-mono" />
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400">b</label>
+                <input type="number" id="inputQuadB" value="${state.quadB}" class="w-full p-1.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 font-mono" />
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400">c (√c)</label>
+                <input type="number" min="1" id="inputQuadC" value="${state.quadC}" class="w-full p-1.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 font-mono" />
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400">d (/d)</label>
+                <input type="number" min="1" id="inputQuadD" value="${state.quadD}" class="w-full p-1.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 font-mono" />
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById('inputQuadA').addEventListener('input', (e) => { state.quadA = parseInt(e.target.value) || 0; calculateAll(); });
+        document.getElementById('inputQuadB').addEventListener('input', (e) => { state.quadB = parseInt(e.target.value) || 0; calculateAll(); });
+        document.getElementById('inputQuadC').addEventListener('input', (e) => { state.quadC = Math.max(1, parseInt(e.target.value) || 1); calculateAll(); });
+        document.getElementById('inputQuadD').addEventListener('input', (e) => { state.quadD = Math.max(1, parseInt(e.target.value) || 1); calculateAll(); });
+      } else if (state.mode === 'rational') {
+        container.innerHTML = `
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Numerador (p)</label>
+              <input type="number" id="inputNum" value="${state.rationalNum}" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Denominador (q)</label>
+              <input type="number" id="inputDen" value="${state.rationalDen}" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+        `;
+        document.getElementById('inputNum').addEventListener('input', (e) => { state.rationalNum = parseInt(e.target.value) || 1; calculateAll(); });
+        document.getElementById('inputDen').addEventListener('input', (e) => { state.rationalDen = parseInt(e.target.value) || 1; calculateAll(); });
+      } else if (state.mode === 'decimal') {
+        container.innerHTML = `
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Número Decimal (x)</label>
+            <input type="number" step="any" id="inputDec" value="${state.decimalVal}" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        `;
+        document.getElementById('inputDec').addEventListener('input', (e) => { state.decimalVal = parseFloat(e.target.value) || 0; calculateAll(); });
+      } else if (state.mode === 'constant') {
+        container.innerHTML = `
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Constante Matematicas</label>
+            <select id="inputConst" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="pi" ${state.constantKey === 'pi' ? 'selected' : ''}>π (Pi)</option>
+              <option value="e" ${state.constantKey === 'e' ? 'selected' : ''}>e (Euler)</option>
+              <option value="phi" ${state.constantKey === 'phi' ? 'selected' : ''}>ϕ (Número Áureo)</option>
+            </select>
+          </div>
+        `;
+        document.getElementById('inputConst').addEventListener('change', (e) => { state.constantKey = e.target.value; calculateAll(); });
+      }
+    }
+
+    function renderMathIn(element) {
+      if (window.renderMathInElement && element) {
+        renderMathInElement(element, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    function setupEventListeners() {
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.mode-btn').forEach(b => {
+            b.classList.remove('border-indigo-600', 'bg-indigo-50', 'dark:bg-indigo-950/50', 'text-indigo-600', 'dark:text-indigo-400');
+            b.classList.add('border-slate-200', 'dark:border-slate-800', 'text-slate-600', 'dark:text-slate-300');
+          });
+          btn.classList.add('border-indigo-600', 'bg-indigo-50', 'dark:bg-indigo-950/50', 'text-indigo-600', 'dark:text-indigo-400');
+          btn.classList.remove('border-slate-200', 'dark:border-slate-800', 'text-slate-600', 'dark:text-slate-300');
+
+          state.mode = btn.dataset.mode;
+          document.getElementById('modeBadge').textContent = btn.textContent.trim();
+          renderInputControls();
+          calculateAll();
+        });
+      });
+
+      const depthSlider = document.getElementById('depthSlider');
+      depthSlider.addEventListener('input', (e) => {
+        state.depth = parseInt(e.target.value);
+        document.getElementById('depthVal').textContent = state.depth;
+        calculateAll();
+      });
+
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.preset;
+          const p = PRESETS[key];
+          if (!p) return;
+
+          state.mode = p.mode;
+          state.depth = p.depth;
+          document.getElementById('depthSlider').value = p.depth;
+          document.getElementById('depthVal').textContent = p.depth;
+
+          if (p.mode === 'periodic') {
+            state.periodicInt = p.int;
+            state.periodicNonRep = p.nonRep;
+            state.periodicRep = p.rep;
+          } else if (p.mode === 'quadratic') {
+            state.quadA = p.a;
+            state.quadB = p.b;
+            state.quadC = p.c;
+            state.quadD = p.d;
+          } else if (p.mode === 'rational') {
+            state.rationalNum = p.num;
+            state.rationalDen = p.den;
+          } else if (p.mode === 'constant') {
+            state.constantKey = p.key;
+          }
+
+          document.querySelectorAll('.mode-btn').forEach(b => {
+            if (b.dataset.mode === state.mode) {
+              b.click();
+            }
+          });
+        });
+      });
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+          btn.classList.add('active-tab');
+          state.activeTab = btn.dataset.tab;
+          renderActiveTab();
+        });
+      });
+
+      document.getElementById('copyListBtn').addEventListener('click', () => {
+        let str = '[' + state.terms.join(', ') + ']';
+        navigator.clipboard ? navigator.clipboard.writeText(str) : document.execCommand('copy');
+        const btn = document.getElementById('copyListBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i> ¡Copiado!`;
+        setTimeout(() => btn.innerHTML = orig, 1800);
+      });
+
+      document.getElementById('reverseInput').addEventListener('input', updateReverseCalculation);
+
+      const modal = document.getElementById('theoryModal');
+      document.getElementById('theoryBtn').addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        renderMathIn(modal);
+      });
+      document.getElementById('closeTheoryBtn').addEventListener('click', () => modal.classList.add('hidden'));
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        renderActiveTab();
+      });
+
+      window.addEventListener('resize', () => {
+        renderActiveTab();
+      });
+    }
+
+    window.onload = function() {
+      lucide.createIcons();
+      renderInputControls();
+      calculateAll();
+      setupEventListeners();
+      renderMathIn(document.body);
+    };
+  </script>
+</body>
+</html>
