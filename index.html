@@ -2,8 +2,26 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Fracciones Continuas - Calculadora y Visualizador Interactivo</title>
+
+  <!-- PWA: manifest y metadatos de instalación (todas las rutas son relativas,
+       de modo que la app funciona igual de bien en la raíz, en una subcarpeta
+       de angelmicelti.github.io o en una de tecdea.github.io) -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="description" content="Calculadora y visualizador interactivo de fracciones continuas: decimales periódicos, irracionales cuadráticos, convergentes y más." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Fracciones" />
+  <meta name="application-name" content="Fracciones" />
+
+  <!-- Favicon e iconos multiplataforma -->
+  <link rel="icon" href="favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -66,6 +84,14 @@
     .dark .active-tab {
       border-bottom: 2px solid #818cf8;
       color: #818cf8;
+    }
+    /* Respeta las áreas seguras en móvil (notch, barra inferior) al instalarse como app */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
   </style>
 </head>
@@ -1396,6 +1422,7 @@
 
       document.getElementById('themeToggle').addEventListener('click', () => {
         document.documentElement.classList.toggle('dark');
+        try { localStorage.setItem('fc-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {}
         renderActiveTab();
       });
 
@@ -1404,12 +1431,50 @@
       });
     }
 
+    // Registro del Service Worker con protección de alcance:
+    // - Se usa la URL relativa './sw.js', por lo que el scope queda confinado
+    //   a la subcarpeta de despliegue (p. ej. /fraccionescontinuas/ dentro de
+    //   angelmicelti.github.io o tecdea.github.io). Así la app nunca controla
+    //   la raíz del portal ni interfiere con otras PWA alojadas en él.
+    // - No se registra bajo file:// ni si la app se sirve en la raíz del
+    //   dominio ("/"), donde podría reclamar el portal anfitrión completo.
+    (function registerServiceWorker() {
+      if (!('serviceWorker' in navigator)) return;
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
+      const path = location.pathname;
+      if (path === '/' || !path.slice(0, -1).includes('/')) return; // raíz del dominio: abortar
+
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' }).catch((err) => {
+          console.warn('No se pudo registrar el Service Worker:', err);
+        });
+      });
+    })();
+
+    // Restaura el tema guardado antes del primer render para evitar parpadeo
+    (function restoreTheme() {
+      try {
+        if (localStorage.getItem('fc-theme') === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+
     window.onload = function() {
       lucide.createIcons();
       renderInputControls();
       calculateAll();
       setupEventListeners();
       renderMathIn(document.body);
+
+      // Accesos directos de la PWA: index.html#tab=reverse | index.html#teoria
+      const hash = location.hash;
+      if (hash.startsWith('#tab=')) {
+        const btn = document.querySelector(`.tab-btn[data-tab="${hash.slice(5)}"]`);
+        if (btn) btn.click();
+      } else if (hash === '#teoria') {
+        document.getElementById('theoryBtn').click();
+      }
     };
   </script>
 </body>
